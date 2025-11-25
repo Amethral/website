@@ -76,6 +76,13 @@
           {{ toggleText }}
         </button>
       </div>
+
+      <!-- OAuth Buttons -->
+      <OAuthButtons 
+        :webToken="isUnityClient ? props.webToken : undefined" 
+        :deviceId="isUnityClient ? props.deviceId : undefined"
+        :isLoading="isLoading"
+      />
     </form>
 
     <!-- Link Mode Message -->
@@ -89,6 +96,7 @@
 import { ref, computed, onMounted } from 'vue'
 import authService from '../services/authService'
 import { useAuthStore } from '../stores/authStore'
+import OAuthButtons from './OAuthButtons.vue'
 
 const authStore = useAuthStore()
 

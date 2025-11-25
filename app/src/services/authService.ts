@@ -35,6 +35,15 @@ interface ErrorResponse {
   error?: string
 }
 
+export interface UserProfile {
+  id: string
+  username: string
+  email: string
+  createdAt: string
+}
+
+type OAuthProvider = 'Google' | 'Discord' | 'Steam'
+
 class AuthService {
   /**
    * Register a new user with email and password
@@ -97,6 +106,26 @@ class AuthService {
   }
 
   /**
+   * Get current user profile
+   */
+  async getProfile(): Promise<UserProfile> {
+    const jwt = this.getStoredJWT()
+    if (!jwt) throw new Error('No JWT token found')
+
+    try {
+      const response = await axios.get(`${API_BASE_URL}/me`, {
+        headers: {
+          Authorization: `Bearer ${jwt}`
+        }
+      })
+      return response.data
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
+  }
+
+  /**
    * Handle errors from API calls
    */
   private handleError(error: unknown): void {
@@ -131,6 +160,29 @@ class AuthService {
    */
   clearJWT(): void {
     localStorage.removeItem('amethral_jwt')
+  }
+
+  /**
+   * Initiate OAuth login by redirecting to the backend OAuth endpoint
+   */
+  initiateOAuthLogin(provider: OAuthProvider, webToken?: string, deviceId?: string): void {
+    const params = new URLSearchParams()
+    if (webToken) params.append('webToken', webToken)
+    if (deviceId) params.append('deviceId', deviceId)
+    
+    const queryString = params.toString()
+    const url = `${API_BASE_URL}/oauth/${provider}/login${queryString ? '?' + queryString : ''}`
+    
+    // Redirect the user to the OAuth login endpoint
+    window.location.href = url
+  }
+
+  /**
+   * Handle OAuth callback and extract token from URL
+   */
+  handleOAuthCallback(): string | null {
+    const urlParams = new URLSearchParams(window.location.search)
+    return urlParams.get('token')
   }
 }
 

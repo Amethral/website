@@ -12,12 +12,9 @@
         
         <!-- Authenticated User -->
         <template v-if="authStore.isAuthenticated">
-          <span class="user-greeting">
-            Welcome, <strong>{{ authStore.currentUser }}</strong>
-          </span>
-          <button @click="handleLogout" class="nav-link logout-btn">
-            Logout
-          </button>
+          <router-link to="/profile" class="user-avatar" title="Go to Profile">
+            {{ userInitials }}
+          </router-link>
         </template>
         
         <!-- Not Authenticated -->
@@ -30,16 +27,15 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useAuthStore } from '../stores/authStore'
-import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
-const router = useRouter()
 
-const handleLogout = () => {
-  authStore.logout()
-  router.push('/')
-}
+const userInitials = computed(() => {
+  const name = authStore.currentUser || ''
+  return name.slice(0, 2).toUpperCase()
+})
 </script>
 
 <style scoped>
@@ -111,27 +107,27 @@ const handleLogout = () => {
   box-shadow: var(--shadow-glow);
 }
 
-.user-greeting {
-  color: var(--color-text-dim);
-  font-size: 0.95rem;
-  padding: var(--spacing-sm) var(--spacing-md);
-}
-
-.user-greeting strong {
-  color: var(--color-primary);
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), #4a1a75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
   font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(138, 62, 201, 0.3);
 }
 
-.logout-btn {
-  background: transparent;
-  border: 1px solid var(--color-border);
-  cursor: pointer;
-}
-
-.logout-btn:hover {
-  background: var(--color-bg-light);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+.user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(138, 62, 201, 0.5);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Mobile */

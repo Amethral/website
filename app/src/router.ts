@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import HomePage from './pages/HomePage.vue'
 import AuthPage from './pages/AuthPage.vue'
+import OAuthCallbackPage from './pages/OAuthCallbackPage.vue'
+import ProfileView from './pages/ProfileView.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -12,6 +14,16 @@ const routes: RouteRecordRaw[] = [
     path: '/login',
     name: 'Auth',
     component: AuthPage
+  },
+  {
+    path: '/oauth/success',
+    name: 'OAuthCallback',
+    component: OAuthCallbackPage
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: ProfileView
   }
 ]
 
