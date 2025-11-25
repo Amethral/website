@@ -57,7 +57,7 @@ defineProps<{
   box-shadow: 
     0 0 0 2px var(--color-darker-bg),
     0 0 0 6px var(--color-primary),
-    0 15px 40px rgba(157, 78, 221, 0.5);
+    0 15px 40px rgba(0, 0, 0, 0.5);
 }
 
 .class-header {
@@ -68,7 +68,7 @@ defineProps<{
 .class-icon {
   font-size: 4rem;
   margin-bottom: var(--spacing-sm);
-  filter: drop-shadow(0 0 10px rgba(157, 78, 221, 0.5));
+  filter: drop-shadow(0 0 10px rgba(197, 160, 89, 0.3));
 }
 
 .class-name {
@@ -135,7 +135,7 @@ defineProps<{
     var(--color-accent)
   );
   transition: width 0.5s ease;
-  box-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
+  box-shadow: 0 0 5px rgba(197, 160, 89, 0.3);
 }
 
 .class-card:hover .stat-fill {
@@ -143,8 +143,8 @@ defineProps<{
 }
 
 @keyframes stat-pulse {
-  0%, 100% { box-shadow: 0 0 10px rgba(157, 78, 221, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(157, 78, 221, 0.8); }
+  0%, 100% { box-shadow: 0 0 5px rgba(197, 160, 89, 0.3); }
+  50% { box-shadow: 0 0 10px rgba(197, 160, 89, 0.6); }
 }
 
 /* Mobile Responsive */

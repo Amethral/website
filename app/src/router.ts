@@ -24,6 +24,16 @@ const routes: RouteRecordRaw[] = [
     path: '/profile',
     name: 'Profile',
     component: ProfileView
+  },
+  {
+    path: '/download',
+    name: 'Download',
+    component: () => import('./pages/DownloadPage.vue')
+  },
+  {
+    path: '/shop',
+    name: 'Shop',
+    component: () => import('./pages/ShopPage.vue')
   }
 ]
 

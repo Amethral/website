@@ -1,11 +1,13 @@
 :root {
-  /* Minimal Color Palette - Amethyst Purple Accent */
+  /* Cleaner PSX/PS1 Palette */
   --color-primary: #9D4EDD;
-  --color-bg: #0A0A0A;
-  --color-bg-light: #1A1A1A;
+  --color-accent-gold: #C5A059;
+  --color-bg: #050505;
+  --color-bg-light: #121212;
   --color-text: #E0E0E0;
-  --color-text-dim: #888888;
+  --color-text-dim: #A0A0A0;
   --color-border: #333333;
+  --color-border-gold: #8B6B43;
   
   /* Spacing */
   --spacing-xs: 0.25rem;
@@ -15,15 +17,15 @@
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
   
-  /* Border Radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
+  /* Border Radius - Sharp for PSX feel */
+  --radius-sm: 0px;
+  --radius-md: 2px;
   
-  /* Shadows */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px rgba(157, 78, 221, 0.3);
+  /* Shadows - Hard shadows for retro feel */
+  --shadow-sm: 2px 2px 0px rgba(0, 0, 0, 0.5);
+  --shadow-md: 4px 4px 0px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 8px 8px 0px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 10px rgba(255, 255, 255, 0.05); /* Neutral subtle glow */
 }
 
 * {
@@ -33,7 +35,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; /* Cleaner body font */
   background: var(--color-bg);
   color: var(--color-text);
   line-height: 1.6;
@@ -46,42 +48,48 @@ body {
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  letter-spacing: -0.5px;
-  color: var(--color-text);
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--color-accent-gold);
   line-height: 1.2;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.8); /* Hard shadow */
 }
 
-h1 { font-size: 3rem; margin-bottom: var(--spacing-lg); }
-h2 { font-size: 2rem; margin-bottom: var(--spacing-md); }
-h3 { font-size: 1.5rem; margin-bottom: var(--spacing-md); }
+h1 { font-size: 3.5rem; margin-bottom: var(--spacing-lg); }
+h2 { font-size: 2.5rem; margin-bottom: var(--spacing-md); }
+h3 { font-size: 1.75rem; margin-bottom: var(--spacing-md); }
 
 p {
   margin-bottom: var(--spacing-md);
   color: var(--color-text-dim);
+  font-size: 1.05rem;
 }
 
-/* Button */
+/* Button (Legacy support, though we use PSXButton now) */
 .btn {
-  font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 600;
   padding: var(--spacing-md) var(--spacing-xl);
   background: var(--color-bg-light);
   color: var(--color-text);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-gold);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
   display: inline-block;
+  text-transform: uppercase;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
 }
 
 .btn:hover {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-glow);
-  transform: translateY(-1px);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+  border-color: var(--color-accent-gold);
+  color: var(--color-accent-gold);
 }
 
 .btn-primary {
@@ -90,14 +98,9 @@ p {
   color: white;
 }
 
-.btn-primary:hover {
-  background: #8A3EC9;
-  border-color: #8A3EC9;
-}
-
 .btn-large {
   padding: var(--spacing-lg) var(--spacing-2xl);
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
 /* Input */
@@ -105,7 +108,7 @@ p {
   font-family: inherit;
   font-size: 1rem;
   padding: var(--spacing-md);
-  background: var(--color-bg-light);
+  background: rgba(20, 20, 20, 0.8);
   color: var(--color-text);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -115,8 +118,8 @@ p {
 }
 
 .input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(157, 78, 221, 0.1);
+  border-color: var(--color-accent-gold);
+  box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.2);
 }
 
 .input::placeholder {
@@ -125,9 +128,9 @@ p {
 
 /* Card */
 .card {
-  background: var(--color-bg-light);
+  background: rgba(18, 18, 18, 0.9);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   padding: var(--spacing-xl);
   box-shadow: var(--shadow-md);
 }
@@ -142,6 +145,7 @@ p {
 /* Utility Classes */
 .text-center { text-align: center; }
 .text-primary { color: var(--color-primary); }
+.text-gold { color: var(--color-accent-gold); }
 .mt-xs { margin-top: var(--spacing-xs); }
 .mt-sm { margin-top: var(--spacing-sm); }
 .mt-md { margin-top: var(--spacing-md); }
@@ -155,9 +159,9 @@ p {
 
 /* Responsive */
 @media (max-width: 768px) {
-  h1 { font-size: 2rem; }
-  h2 { font-size: 1.5rem; }
-  h3 { font-size: 1.25rem; }
+  h1 { font-size: 2.5rem; }
+  h2 { font-size: 2rem; }
+  h3 { font-size: 1.5rem; }
   
   .btn-large {
     padding: var(--spacing-md) var(--spacing-lg);
