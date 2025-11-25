@@ -38,7 +38,7 @@
           <p class="mt-md">
             Welcome back, <strong>{{ username }}</strong>
           </p>
-          <p class="redirect-text mt-lg">Redirecting to game...</p>
+          <p class="redirect-text mt-lg">Authentication complete. You can close this window.</p>
         </div>
       </div>
     </div>
@@ -78,8 +78,13 @@ const handleAuthSuccess = (token: string, user: string) => {
 }
 
 const handleWebSuccess = () => {
-  // For web-only logins, redirect to home page
-  router.push('/')
+  if (webToken.value) {
+    // If there was a token, it means we came from the game
+    authCompleted.value = true
+  } else {
+    // Normal web login
+    router.push('/')
+  }
 }
 </script>
 

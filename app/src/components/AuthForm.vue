@@ -148,7 +148,7 @@ const toggleMode = () => {
   successMessage.value = ''
 }
 
-const handleSubmit = async () => {
+  const handleSubmit = async () => {
   errorMessage.value = ''
   successMessage.value = ''
   isLoading.value = true
@@ -177,13 +177,8 @@ const handleSubmit = async () => {
       successMessage.value = 'Signed in successfully!'
     }
 
-    // Only finalize for Unity client, otherwise just emit web success
-    if (isUnityClient.value) {
-      await finalizeAuth()
-    } else {
-      isLoading.value = false
-      emit('webSuccess')
-    }
+    isLoading.value = false
+    emit('webSuccess')
   } catch (error: any) {
     isLoading.value = false
     errorMessage.value = error.response?.data?.message || 'Authentication failed. Please try again.'
@@ -210,35 +205,11 @@ const attemptLinkAccount = async () => {
   try {
     await authService.linkAccount(storedJWT, props.webToken)
     successMessage.value = 'Account linked!'
-    await finalizeAuth()
+    isLoading.value = false
+    emit('webSuccess')
   } catch (error: any) {
     mode.value = 'login'
     isLoading.value = false
-  }
-}
-
-const finalizeAuth = async () => {
-  loadingText.value = 'Finalizing...'
-
-  try {
-    const response = await authService.finalize({
-      webToken: props.webToken,
-      deviceId: props.deviceId
-    })
-
-    // Store session info in auth store
-    authStore.setAuth(response.sessionToken, response.username, response.userId)
-
-    successMessage.value = 'Success! Redirecting...'
-    emit('success', response.sessionToken, response.username)
-
-    setTimeout(() => {
-      const deepLink = `amethral://login?sessionToken=${response.sessionToken}&username=${encodeURIComponent(response.username)}`
-      window.location.href = deepLink
-    }, 1500)
-  } catch (error: any) {
-    isLoading.value = false
-    errorMessage.value = error.response?.data?.message || 'Failed to complete authentication.'
   }
 }
 

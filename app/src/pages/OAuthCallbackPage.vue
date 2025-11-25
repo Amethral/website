@@ -23,7 +23,7 @@
           <p v-if="username" class="welcome-text">
             Welcome back, <strong>{{ username }}</strong>
           </p>
-          <p class="redirect-text">Redirecting you now...</p>
+          <p class="redirect-text">Authentication complete. You can close this window.</p>
         </div>
       </div>
     </div>
@@ -57,14 +57,24 @@ onMounted(async () => {
     // Store the token in the auth store
     authStore.setAuth(token)
     
-    // Optional: You could decode the JWT to get username
-    // For now, we'll just mark as successful
+    // For polling flow, we just need to show success
+    // The Unity client will poll the backend and detect the login
     isProcessing.value = false
-
-    // Redirect to home page after a brief delay
+    
+    // If we have a way to know it's a Unity login (maybe check localStorage if we kept it, 
+    // but we removed it), we could show a specific message.
+    // For now, we'll show the success state.
+    
+    // Optional: Redirect to home after delay if it's a web login
+    // But since we don't know for sure, we can just show the success message
+    // and let the user decide.
+    
+    // If we want to be smarter, we could check if we are in a popup or if the window.opener exists?
+    // Or just redirect to home after a long delay.
+    
     setTimeout(() => {
       router.push('/')
-    }, 1500)
+    }, 3000)
   } catch (err: any) {
     error.value = err.message || 'An unexpected error occurred'
     isProcessing.value = false

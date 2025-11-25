@@ -165,6 +165,9 @@ class AuthService {
   /**
    * Initiate OAuth login by redirecting to the backend OAuth endpoint
    */
+  /**
+   * Initiate OAuth login by redirecting to the backend OAuth endpoint
+   */
   initiateOAuthLogin(provider: OAuthProvider, webToken?: string, deviceId?: string): void {
     const params = new URLSearchParams()
     if (webToken) params.append('webToken', webToken)
