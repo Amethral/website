@@ -45,6 +45,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import("./pages/DeviceLoginPage.vue"),
     meta: { hideNavbar: true },
   },
+  {
+    path: '/activate',
+    name: 'Activate',
+    component: () => import('./pages/ActivatePage.vue'),
+    meta: { hideNavbar: true }
+  }
 ];
 
 const router = createRouter({

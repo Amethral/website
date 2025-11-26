@@ -9,6 +9,7 @@
 
         <!-- Auth Form -->
         <AuthForm
+          v-if="!authCompleted"
           :webToken="webToken"
           :deviceId="deviceId"
           @success="handleAuthSuccess"
@@ -19,10 +20,13 @@
         <div v-if="authCompleted" class="success-card card text-center">
           <div class="success-icon">✓</div>
           <h2>Connected!</h2>
-          <p class="mt-md">
+          <p class="mt-md" v-if="username">
             You are now logged in as <strong>{{ username }}</strong>
           </p>
-          <p class="redirect-text mt-lg">Please check your game client.</p>
+          <p class="mt-md" v-else>
+            You are now logged in.
+          </p>
+          <p class="redirect-text mt-lg">This window will close automatically.</p>
         </div>
       </div>
     </div>
@@ -51,12 +55,20 @@ onMounted(() => {
 });
 
 const handleAuthSuccess = (_token: string, user: string) => {
-  authCompleted.value = true;
-  username.value = user;
-};
+  authCompleted.value = true
+  username.value = user
+  scheduleClose()
+}
 
 const handleWebSuccess = () => {
-  authCompleted.value = true;
+  authCompleted.value = true
+  scheduleClose()
+}
+
+const scheduleClose = () => {
+  setTimeout(() => {
+    window.close()
+  }, 2000)
 };
 </script>
 

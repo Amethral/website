@@ -74,11 +74,11 @@ class AuthService {
   /**
    * Link an existing account using a stored JWT token
    */
-  async linkAccount(jwt: string, webToken: string): Promise<{ message: string }> {
+  async linkAccount(jwt: string, userCode: string): Promise<{ message: string }> {
     try {
       const response = await axios.post(
         `${API_BASE_URL}/link-existing-account`,
-        { webToken },
+        { userCode },
         {
           headers: {
             Authorization: `Bearer ${jwt}`
