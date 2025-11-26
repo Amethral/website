@@ -9,8 +9,19 @@
           </p>
         </div>
 
-        <!-- Code Entry Form -->
-        <form @submit.prevent="handleSubmit" class="form card" v-if="!success">
+        <!-- Auth Form (if not logged in) -->
+        <div v-if="!authStore.isAuthenticated">
+          <AuthForm
+            webToken="web-only"
+            deviceId="web-browser"
+            :hideSuccessMessage="true"
+            @success="handleAuthSuccess"
+            @webSuccess="handleAuthSuccess"
+          />
+        </div>
+
+        <!-- Code Entry Form (if logged in) -->
+        <form v-else @submit.prevent="handleSubmit" class="form card" v-if="!success">
           <div class="form-group">
             <label for="userCode">Device Code</label>
             <input
@@ -53,6 +64,7 @@ import { ref } from 'vue'
 import authService from '../services/authService'
 import { useAuthStore } from '../stores/authStore'
 import { useRouter } from 'vue-router'
+import AuthForm from '../components/AuthForm.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -61,6 +73,14 @@ const userCode = ref('')
 const isLoading = ref(false)
 const error = ref('')
 const success = ref(false)
+
+// Ensure we come back here after OAuth
+localStorage.setItem('auth_redirect', '/activate')
+
+const handleAuthSuccess = () => {
+  // Just let the reactivity of authStore.isAuthenticated switch the view
+  // We might want to auto-focus the code input here if possible
+}
 
 const formatCode = () => {
   // Auto-uppercase

@@ -66,9 +66,11 @@ const pageTitle = computed(() => {
 onMounted(() => {
   const token = route.query.token as string
   const device = route.query.deviceId as string
+  const redirect = route.query.redirect as string
 
   if (token) webToken.value = token
   if (device) deviceId.value = device
+  if (redirect) localStorage.setItem('auth_redirect', redirect)
 })
 
 const handleAuthSuccess = (token: string, user: string) => {
@@ -83,7 +85,12 @@ const handleWebSuccess = () => {
     authCompleted.value = true
   } else {
     // Normal web login
-    router.push('/')
+    const redirect = route.query.redirect as string
+    if (redirect) {
+      router.push(redirect)
+    } else {
+      router.push('/')
+    }
   }
 }
 </script>

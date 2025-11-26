@@ -6,7 +6,7 @@
     </div>
 
     <!-- Success Message -->
-    <div v-if="successMessage" class="message success-message">
+    <div v-if="successMessage && !hideSuccessMessage" class="message success-message">
       {{ successMessage }}
     </div>
 
@@ -103,6 +103,7 @@ const authStore = useAuthStore()
 interface Props {
   webToken: string
   deviceId: string
+  hideSuccessMessage?: boolean
 }
 
 const props = defineProps<Props>()
@@ -162,9 +163,18 @@ const toggleMode = () => {
         password: formData.value.password,
         webToken: props.webToken
       })
-      // Store username for registered user
+      
+      // Auto-login after register
+      loadingText.value = 'Signing in...'
+      const response = await authService.login({
+        email: formData.value.email,
+        password: formData.value.password,
+        webToken: props.webToken
+      })
+      
+      authStore.setAuth(response.token)
       authStore.setUserInfo(formData.value.username)
-      successMessage.value = 'Account created!'
+      successMessage.value = 'Account created and signed in!'
     } else {
       loadingText.value = 'Signing in...'
       const response = await authService.login({

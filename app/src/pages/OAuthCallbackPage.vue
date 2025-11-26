@@ -72,9 +72,19 @@ onMounted(async () => {
     // If we want to be smarter, we could check if we are in a popup or if the window.opener exists?
     // Or just redirect to home after a long delay.
     
-    setTimeout(() => {
-      router.push('/')
-    }, 3000)
+    // Check for stored redirect
+    const redirect = localStorage.getItem('auth_redirect')
+    localStorage.removeItem('auth_redirect')
+
+    if (redirect) {
+      // Instant redirect for device flow
+      router.push(redirect)
+    } else {
+      // Default delay for normal login
+      setTimeout(() => {
+        router.push('/')
+      }, 3000)
+    }
   } catch (err: any) {
     error.value = err.message || 'An unexpected error occurred'
     isProcessing.value = false
