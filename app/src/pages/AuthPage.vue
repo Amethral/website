@@ -3,30 +3,14 @@
     <div class="container">
       <div class="auth-container">
         <div class="auth-header text-center">
-          <h1 class="auth-title">{{ pageTitle }}</h1>
-          <p class="auth-subtitle" v-if="webToken && deviceId">
-            Session connected
-          </p>
-          <p class="auth-subtitle" v-else>
+          <h1 class="auth-title">Get Started</h1>
+          <p class="auth-subtitle">
             Create an account or sign in to play
-          </p>
-        </div>
-
-        <!-- Error if missing params -->
-        <div v-if="!webToken || !deviceId" class="info-card card">
-          <h3>Welcome to Amethral</h3>
-          <p>
-            This authentication page is typically accessed from the game client.
-          </p>
-          <p class="mt-md">
-            You can still create an account or login below, but you'll need the game client to play.
           </p>
         </div>
 
         <!-- Auth Form -->
         <AuthForm
-          :webToken="webToken || 'web-only'"
-          :deviceId="deviceId || 'web-browser'"
           @success="handleAuthSuccess"
           @webSuccess="handleWebSuccess"
         />
@@ -38,7 +22,7 @@
           <p class="mt-md">
             Welcome back, <strong>{{ username }}</strong>
           </p>
-          <p class="redirect-text mt-lg">Authentication complete. You can close this window.</p>
+          <p class="redirect-text mt-lg">Redirecting...</p>
         </div>
       </div>
     </div>
@@ -46,30 +30,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthForm from '../components/AuthForm.vue'
 
 const route = useRoute()
 const router = useRouter()
 
-const webToken = ref<string>('')
-const deviceId = ref<string>('')
 const authCompleted = ref(false)
 const sessionToken = ref<string>('')
 const username = ref<string>('')
 
-const pageTitle = computed(() => {
-  return webToken.value && deviceId.value ? 'Player Login' : 'Get Started'
-})
-
 onMounted(() => {
-  const token = route.query.token as string
-  const device = route.query.deviceId as string
   const redirect = route.query.redirect as string
-
-  if (token) webToken.value = token
-  if (device) deviceId.value = device
   if (redirect) localStorage.setItem('auth_redirect', redirect)
 })
 
@@ -77,20 +50,19 @@ const handleAuthSuccess = (token: string, user: string) => {
   authCompleted.value = true
   sessionToken.value = token
   username.value = user
+  
+  // Redirect after short delay
+  setTimeout(() => {
+    handleWebSuccess()
+  }, 1500)
 }
 
 const handleWebSuccess = () => {
-  if (webToken.value) {
-    // If there was a token, it means we came from the game
-    authCompleted.value = true
+  const redirect = route.query.redirect as string
+  if (redirect) {
+    router.push(redirect)
   } else {
-    // Normal web login
-    const redirect = route.query.redirect as string
-    if (redirect) {
-      router.push(redirect)
-    } else {
-      router.push('/')
-    }
+    router.push('/')
   }
 }
 </script>

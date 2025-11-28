@@ -48,17 +48,15 @@
 import authService from '../services/authService'
 
 interface Props {
-  webToken?: string
-  deviceId?: string
   isLoading?: boolean
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 type OAuthProvider = 'Google' | 'Discord' | 'Steam'
 
 const handleOAuthLogin = (provider: OAuthProvider) => {
-  authService.initiateOAuthLogin(provider, props.webToken, props.deviceId)
+  authService.initiateOAuthLogin(provider)
 }
 </script>
 

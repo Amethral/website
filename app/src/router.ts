@@ -7,6 +7,7 @@ import HomePage from "./pages/HomePage.vue";
 import AuthPage from "./pages/AuthPage.vue";
 import OAuthCallbackPage from "./pages/OAuthCallbackPage.vue";
 import ProfileView from "./pages/ProfileView.vue";
+import NotFoundPage from "./pages/NotFoundPage.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -40,17 +41,10 @@ const routes: RouteRecordRaw[] = [
     component: () => import("./pages/ShopPage.vue"),
   },
   {
-    path: "/device-login",
-    name: "DeviceLogin",
-    component: () => import("./pages/DeviceLoginPage.vue"),
-    meta: { hideNavbar: true },
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: NotFoundPage,
   },
-  {
-    path: '/activate',
-    name: 'Activate',
-    component: () => import('./pages/ActivatePage.vue'),
-    meta: { hideNavbar: true }
-  }
 ];
 
 const router = createRouter({

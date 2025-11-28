@@ -6,24 +6,11 @@ interface RegisterPayload {
   username: string
   email: string
   password: string
-  webToken: string
 }
 
 interface LoginPayload {
   email: string
   password: string
-  webToken: string
-}
-
-interface FinalizePayload {
-  webToken: string
-  deviceId: string
-}
-
-interface FinalizeResponse {
-  sessionToken: string
-  username: string
-  userId: string
 }
 
 interface LoginResponse {
@@ -33,6 +20,8 @@ interface LoginResponse {
 interface ErrorResponse {
   message?: string
   error?: string
+  errors?: Record<string, string[] | string>
+  code?: string
 }
 
 export interface UserProfile {
@@ -42,7 +31,111 @@ export interface UserProfile {
   createdAt: string
 }
 
+export interface AppError extends Error {
+  status?: number
+  code?: string
+  userMessage: string
+  details?: any
+}
+
 type OAuthProvider = 'Google' | 'Discord' | 'Steam'
+
+// Build a standardized, user-friendly error from unknown/axios error
+export function toAppError(error: unknown): AppError {
+  let appErr: AppError
+  if (axios.isAxiosError(error)) {
+    const axiosError = error as AxiosError<ErrorResponse>
+    const status = axiosError.response?.status
+    const data = axiosError.response?.data
+
+    // Prefer backend-provided messages when sensible
+    const backendMsg = data?.message || data?.error
+
+    // Field-level validation errors (400)
+    let validationMsg = ''
+    if (data?.errors) {
+      const parts: string[] = []
+      for (const [field, msgs] of Object.entries(data.errors)) {
+        const msgText = Array.isArray(msgs) ? msgs.join(', ') : msgs
+        parts.push(`${capitalize(field)}: ${msgText}`)
+      }
+      if (parts.length) validationMsg = parts.join(' | ')
+    }
+
+    let userMessage = 'Something went wrong. Please try again.'
+
+    switch (status) {
+      case 400:
+        userMessage = validationMsg || backendMsg || 'Invalid request. Please check your input.'
+        break
+      case 401:
+        userMessage = backendMsg || 'Incorrect email or password.'
+        break
+      case 403:
+        userMessage = backendMsg || 'You do not have permission to perform this action.'
+        break
+      case 404:
+        userMessage = backendMsg || 'Requested resource was not found.'
+        break
+      case 409:
+        // Common for register conflicts
+        // Try to infer which field conflicts
+        if (/email/i.test(backendMsg || '') || /email/i.test(validationMsg)) {
+          userMessage = 'An account with this email already exists. Try signing in instead.'
+        } else if (/username/i.test(backendMsg || '') || /user\s*name/i.test(validationMsg)) {
+          userMessage = 'This username is already taken. Please choose another.'
+        } else {
+          userMessage = backendMsg || 'This account already exists. Try signing in.'
+        }
+        break
+      case 429:
+        userMessage = backendMsg || 'Too many attempts. Please wait a moment and try again.'
+        break
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        userMessage = backendMsg || 'Server error. Please try again later.'
+        break
+      default:
+        userMessage = backendMsg || axiosError.message || 'An unexpected error occurred.'
+    }
+
+    appErr = Object.assign(new Error(userMessage), {
+      name: 'AppError',
+      status,
+      code: data?.code,
+      userMessage,
+      details: data
+    }) as AppError
+  } else {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred.'
+    appErr = Object.assign(new Error(message), {
+      name: 'AppError',
+      userMessage: message
+    }) as AppError
+  }
+
+  // Log a concise diagnostic to console for developers
+  // Avoid spamming full response unless debugging
+  // eslint-disable-next-line no-console
+  console.error('[Auth] Error:', {
+    status: (appErr as any).status,
+    code: (appErr as any).code,
+    message: appErr.userMessage
+  })
+
+  return appErr
+}
+
+function capitalize(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
+}
+
+// Helper to get user-facing message from any error
+export function getAuthErrorMessage(error: unknown, fallback = 'Authentication failed. Please try again.'): string {
+  return toAppError(error).userMessage || fallback
+}
 
 class AuthService {
   /**
@@ -50,11 +143,10 @@ class AuthService {
    */
   async register(payload: RegisterPayload): Promise<{ message: string }> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/register-email`, payload)
+      const response = await axios.post(`${API_BASE_URL}/register`, payload)
       return response.data
     } catch (error) {
-      this.handleError(error)
-      throw error
+      throw toAppError(error)
     }
   }
 
@@ -63,45 +155,10 @@ class AuthService {
    */
   async login(payload: LoginPayload): Promise<LoginResponse> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/login-email`, payload)
+      const response = await axios.post(`${API_BASE_URL}/login`, payload)
       return response.data
     } catch (error) {
-      this.handleError(error)
-      throw error
-    }
-  }
-
-  /**
-   * Link an existing account using a stored JWT token
-   */
-  async linkAccount(jwt: string, userCode: string): Promise<{ message: string }> {
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/link-existing-account`,
-        { userCode },
-        {
-          headers: {
-            Authorization: `Bearer ${jwt}`
-          }
-        }
-      )
-      return response.data
-    } catch (error) {
-      this.handleError(error)
-      throw error
-    }
-  }
-
-  /**
-   * Finalize the authentication and get the session token for Unity
-   */
-  async finalize(payload: FinalizePayload): Promise<FinalizeResponse> {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/finalize`, payload)
-      return response.data
-    } catch (error) {
-      this.handleError(error)
-      throw error
+      throw toAppError(error)
     }
   }
 
@@ -110,7 +167,7 @@ class AuthService {
    */
   async getProfile(): Promise<UserProfile> {
     const jwt = this.getStoredJWT()
-    if (!jwt) throw new Error('No JWT token found')
+    if (!jwt) throw toAppError(new Error('You are not signed in.'))
 
     try {
       const response = await axios.get(`${API_BASE_URL}/me`, {
@@ -120,24 +177,7 @@ class AuthService {
       })
       return response.data
     } catch (error) {
-      this.handleError(error)
-      throw error
-    }
-  }
-
-  /**
-   * Handle errors from API calls
-   */
-  private handleError(error: unknown): void {
-    if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError<ErrorResponse>
-      const message = axiosError.response?.data?.message || 
-                     axiosError.response?.data?.error || 
-                     axiosError.message ||
-                     'An unexpected error occurred'
-      console.error('API Error:', message)
-    } else {
-      console.error('Unknown error:', error)
+      throw toAppError(error)
     }
   }
 
@@ -165,16 +205,8 @@ class AuthService {
   /**
    * Initiate OAuth login by redirecting to the backend OAuth endpoint
    */
-  /**
-   * Initiate OAuth login by redirecting to the backend OAuth endpoint
-   */
-  initiateOAuthLogin(provider: OAuthProvider, webToken?: string, deviceId?: string): void {
-    const params = new URLSearchParams()
-    if (webToken) params.append('webToken', webToken)
-    if (deviceId) params.append('deviceId', deviceId)
-    
-    const queryString = params.toString()
-    const url = `${API_BASE_URL}/oauth/${provider}/login${queryString ? '?' + queryString : ''}`
+  initiateOAuthLogin(provider: OAuthProvider): void {
+    const url = `${API_BASE_URL}/oauth/${provider}/login`
     
     // Redirect the user to the OAuth login endpoint
     window.location.href = url
