@@ -1,6 +1,6 @@
-app/node_modules
-app/dist
-app/.vscode
+node_modules
+dist
+.vscode
 .git
 .gitignore
 *.md
