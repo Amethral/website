@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios'
 
-const API_BASE_URL = 'http://localhost:5298/api/auth'
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5298') + '/api/auth'
 
 interface RegisterPayload {
   username: string
