@@ -17,7 +17,7 @@
     </div>
 
     <!-- Form -->
-    <form v-show="!isLoading && mode !== 'link'" @submit.prevent="handleSubmit" class="form card">
+    <form v-show="!isLoading" @submit.prevent="handleSubmit" class="form card">
       <h2 class="form-title">{{ formTitle }}</h2>
 
       <!-- Username (Register only) -->
@@ -79,40 +79,31 @@
 
       <!-- OAuth Buttons -->
       <OAuthButtons 
-        :webToken="isUnityClient ? props.webToken : undefined" 
-        :deviceId="isUnityClient ? props.deviceId : undefined"
         :isLoading="isLoading"
       />
     </form>
-
-    <!-- Link Mode Message -->
-    <div v-if="mode === 'link' && !isLoading" class="card text-center">
-      <p>Connecting to your existing account...</p>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import authService from '../services/authService'
+import { ref, computed } from 'vue'
+import authService, { getAuthErrorMessage } from '../services/authService'
 import { useAuthStore } from '../stores/authStore'
 import OAuthButtons from './OAuthButtons.vue'
 
 const authStore = useAuthStore()
 
 interface Props {
-  webToken: string
-  deviceId: string
   hideSuccessMessage?: boolean
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 const emit = defineEmits<{
   success: [sessionToken: string, username: string]
   webSuccess: []
 }>()
 
-const mode = ref<'login' | 'register' | 'link'>('login')
+const mode = ref<'login' | 'register'>('login')
 const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
@@ -122,11 +113,6 @@ const formData = ref({
   username: '',
   email: '',
   password: ''
-})
-
-// Check if we're coming from Unity client or just web-only login
-const isUnityClient = computed(() => {
-  return props.webToken !== 'web-only' && props.deviceId !== 'web-browser'
 })
 
 const formTitle = computed(() => {
@@ -149,7 +135,7 @@ const toggleMode = () => {
   successMessage.value = ''
 }
 
-  const handleSubmit = async () => {
+const handleSubmit = async () => {
   errorMessage.value = ''
   successMessage.value = ''
   isLoading.value = true
@@ -160,16 +146,14 @@ const toggleMode = () => {
       await authService.register({
         username: formData.value.username,
         email: formData.value.email,
-        password: formData.value.password,
-        webToken: props.webToken
+        password: formData.value.password
       })
       
       // Auto-login after register
       loadingText.value = 'Signing in...'
       const response = await authService.login({
         email: formData.value.email,
-        password: formData.value.password,
-        webToken: props.webToken
+        password: formData.value.password
       })
       
       authStore.setAuth(response.token)
@@ -179,8 +163,7 @@ const toggleMode = () => {
       loadingText.value = 'Signing in...'
       const response = await authService.login({
         email: formData.value.email,
-        password: formData.value.password,
-        webToken: props.webToken
+        password: formData.value.password
       })
       // Store JWT in both authService and Pinia store
       authStore.setAuth(response.token)
@@ -191,41 +174,9 @@ const toggleMode = () => {
     emit('webSuccess')
   } catch (error: any) {
     isLoading.value = false
-    errorMessage.value = error.response?.data?.message || 'Authentication failed. Please try again.'
+    errorMessage.value = getAuthErrorMessage(error)
   }
 }
-
-const attemptLinkAccount = async () => {
-  // Only attempt to link if coming from Unity client
-  if (!isUnityClient.value) {
-    mode.value = 'login'
-    return
-  }
-
-  const storedJWT = authService.getStoredJWT()
-  if (!storedJWT) {
-    mode.value = 'login'
-    return
-  }
-
-  mode.value = 'link'
-  isLoading.value = true
-  loadingText.value = 'Connecting account...'
-
-  try {
-    await authService.linkAccount(storedJWT, props.webToken)
-    successMessage.value = 'Account linked!'
-    isLoading.value = false
-    emit('webSuccess')
-  } catch (error: any) {
-    mode.value = 'login'
-    isLoading.value = false
-  }
-}
-
-onMounted(() => {
-  attemptLinkAccount()
-})
 </script>
 
 <style scoped>

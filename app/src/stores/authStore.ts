@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { jwtDecode } from 'jwt-decode'
-import authService, { type UserProfile } from '../services/authService'
+import authService from '../services/authService'
 
 interface JWTPayload {
   sub: string // userId

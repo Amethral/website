@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import authService from '../services/authService'
+import authService, { getAuthErrorMessage } from '../services/authService'
 import { useAuthStore } from '../stores/authStore'
 
 const router = useRouter()
@@ -86,7 +86,7 @@ onMounted(async () => {
       }, 3000)
     }
   } catch (err: any) {
-    error.value = err.message || 'An unexpected error occurred'
+    error.value = getAuthErrorMessage(err, 'Authentication failed. Please try again.')
     isProcessing.value = false
   }
 })
