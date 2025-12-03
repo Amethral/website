@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  # Vue.js Website
+  website:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: amethral-website
+    environment:
+      # API URL for the frontend to connect to
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    ports:
+      - "${WEBSITE_PORT:-80}:80"
+    networks:
+      - coolify
+    restart: unless-stopped
+
+networks:
+  coolify:
+    external: true
